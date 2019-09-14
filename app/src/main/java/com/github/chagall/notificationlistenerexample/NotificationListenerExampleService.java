@@ -1,9 +1,11 @@
 package com.github.chagall.notificationlistenerexample;
 
+import android.app.Notification;
 import android.content.Intent;
 import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 /**
  * MIT License
@@ -87,9 +89,13 @@ public class NotificationListenerExampleService extends NotificationListenerServ
 
     private int matchNotificationCode(StatusBarNotification sbn) {
         String packageName = sbn.getPackageName();
+        Log.e("notification",sbn.toString());
+        Log.e("notificationTitle",sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TITLE).toString());
+        Log.e("notificationText",sbn.getNotification().extras.getCharSequence(Notification.EXTRA_TEXT).toString());
 
         if(packageName.equals(ApplicationPackageNames.FACEBOOK_PACK_NAME)
                 || packageName.equals(ApplicationPackageNames.FACEBOOK_MESSENGER_PACK_NAME)){
+
             return(InterceptedNotificationCode.FACEBOOK_CODE);
         }
         else if(packageName.equals(ApplicationPackageNames.INSTAGRAM_PACK_NAME)){

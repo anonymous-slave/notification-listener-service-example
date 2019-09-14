@@ -7,11 +7,16 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 /**
  * MIT License
@@ -40,11 +45,24 @@ public class MainActivity extends AppCompatActivity {
     private ImageView interceptedNotificationImageView;
     private ImageChangeBroadcastReceiver imageChangeBroadcastReceiver;
     private AlertDialog enableNotificationListenerAlertDialog;
+    Receiver connectionReceiver;
+    IntentFilter smsIintentFilter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        requestSmsPermission();
+        connectionReceiver = new Receiver();
+        smsIintentFilter = new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            String number = extras.getString("MessageNumber");
+            String message = extras.getString("Message");
+            Log.e("smsFrom",number);
+            Log.e("smsText",message);
+        }
 
         // Here we get a reference to the image we will modify when a notification is received
         interceptedNotificationImageView
@@ -64,9 +82,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        registerReceiver(connectionReceiver, smsIintentFilter);
+
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(imageChangeBroadcastReceiver);
+        unregisterReceiver(connectionReceiver);
+    }
+
+    private void requestSmsPermission() {
+        String permission = android.Manifest.permission.RECEIVE_SMS;
+        int grant = ContextCompat.checkSelfPermission(this, permission);
+        if ( grant != PackageManager.PERMISSION_GRANTED) {
+            String[] permission_list = new String[1];
+            permission_list[0] = permission;
+            ActivityCompat.requestPermissions(this, permission_list, 1);
+        }
     }
 
     /**
